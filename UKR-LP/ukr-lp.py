@@ -30,11 +30,11 @@ class UKR(object):
 
         for epoch in tqdm(range(num_epoch)):
             Y, P_k = self.estimate_lp(X, Z, Zeta)
-            F = self.estimate_f(X, Z)
+            F = self.estimate_F(Y, P_k, Z, Zeta)
             Z = self.estimate_e(X, F, Z, Zeta)
 
             Z_new = make_grid2d(f_resolution, bounds=(torch.min(Z.detach()), torch.max(Z.detach())))
-            f = self.estimate_f(X, Z_new, Z)
+            f = self.estimate_F(Y, P_k, Z_new, Zeta)
 
             history.Y[epoch] = Y.detach().numpy()
             history.F[epoch] = F.detach().numpy()
@@ -55,8 +55,26 @@ class UKR(object):
     def estimate_F(self, Y, P_k, Z, Zeta):
         h_ik = self.kernel(Z, Zeta)
         H_i = h_ik @ P_k
-        F = (h_ik @ (P_k * Y)) / H_i
-        return F
+        N, K = h_ik.shape
+        F2 = torch.zeros((N, 3))
+        for i in range(N):
+            tmp = 0.0
+            for k in range(K):
+                F2[i] += h_ik[i, k] * P_k[k] * Y[k]
+                weight = float(h_ik[i, k] * P_k[k])
+                if weight < 0.0:
+                    exit(0)
+                tmp += weight
+            if tmp / H_i[i] > 1.1:
+                print(tmp / H_i[i])
+                exit(0)
+            F2[i] /= H_i[i]
+        #  P_k = P_k.repeat(3, 1)
+        #  print(h_ik.shape)
+        #  print((Y@P_k).shape)
+        #  F = (h_ik @ (Y @ P_k)) / H_i
+        #  print(F == F2)
+        return F2
 
     def estimate_f(self, X, Z1, Z2=None):
         Z2 = Z1.clone() if Z2 is None else Z2
@@ -89,5 +107,5 @@ if __name__ == '__main__':
 
     X = gen_saddle_shape(100, noise_scale=0.0)
     ukr = UKR(latent_dim=2, eta=0.8)
-    history = ukr.fit(X, num_epoch=50)
+    history = ukr.fit(X, num_epoch=100)
     visualize_history(X, history, save_gif=(len(sys.argv) == 2))
