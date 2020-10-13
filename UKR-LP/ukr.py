@@ -59,3 +59,13 @@ def make_grid2d(resolution, bounds=(-1, +1)):
     mesh += step / 2.0
     grid = np.meshgrid(mesh, mesh)
     return np.dstack(grid).reshape(-1, 2)
+
+
+if __name__ == '__main__':
+    from data import gen_saddle_shape
+    from visualizer import visualize_history
+
+    X = gen_saddle_shape(100, noise_scale=0.0)
+    ukr = UKR(latent_dim=2, eta=100)
+    history = ukr.fit(X, num_epoch=50)
+    visualize_history(X, history.f, history.Z)
