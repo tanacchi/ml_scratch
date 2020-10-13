@@ -24,7 +24,6 @@ def visualize_history(X, history, save_gif=False):
     observable_drawer = [None, None, draw_observable_2D, draw_observable_3D][input_dim]
     latent_drawer     = [None, draw_latent_1D, draw_latent_2D][latent_dim]
 
-    print("X: {}, F: {}, Z:{}".format(X.shape, F_history[0].shape, Z_history[0].shape))
     ani = FuncAnimation(fig, update_graph,
                         frames=num_epoch, repeat=True,
                         fargs=(observable_drawer, latent_drawer,
@@ -68,8 +67,8 @@ def draw_observable_2D(ax, X, F, colormap):
 
 
 def draw_latent_2D(ax, Zeta, Z, colormap):
-    ax.set_xlim(-5, 5)
-    ax.set_ylim(-5, 5)
+    #  ax.set_xlim(-5, 5)
+    #  ax.set_ylim(-5, 5)
     ax.scatter(Zeta[:, 0], Zeta[:, 1], c='red')
     ax.scatter(Z[:, 0], Z[:, 1], c=colormap)
 
