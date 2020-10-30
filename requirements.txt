@@ -1,0 +1,8 @@
+dash
+pandas
+matplotlib
+numpy
+plotly
+scipy
+sklearn
+tqdm
