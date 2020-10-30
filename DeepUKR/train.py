@@ -1,3 +1,4 @@
+import pickle
 import numpy as np
 import torch
 from torch.autograd import Variable
@@ -8,55 +9,59 @@ import torch.utils.data
 import torchvision
 from torchvision import datasets, models, transforms
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+from data import gen_saddle_shape
+from ukr_layer import UKR
 
 
-X_train = torch.from_numpy(np.random.randn(1000, 28*28).astype(np.float32))
-y_train = torch.from_numpy(np.random.randn(1000, 10).astype(np.float32))
-X_test =  torch.from_numpy(np.random.randn(10, 28*28).astype(np.float32))
-y_test = torch.from_numpy(np.random.randn(10, 10).astype(np.float32))
-train = torch.utils.data.TensorDataset(X_train, y_train)
-trainloader = torch.utils.data.DataLoader(train, batch_size=100, shuffle=True)
-test = torch.utils.data.TensorDataset(X_test, y_test)
-testloader = torch.utils.data.DataLoader(test, batch_size=100, shuffle=True)
+samples = 1000
+N = 100
+num_epoch = 1000
+
+X = torch.from_numpy(gen_saddle_shape(N).astype(np.float32))
+X_train = X.repeat(samples, 1, 1)
+train = torch.utils.data.TensorDataset(X_train, X_train)
+trainloader = torch.utils.data.DataLoader(train, batch_size=1, shuffle=True)
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(784, 500)
-        self.fc2 = nn.Linear(500, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.layer = UKR(N, latent_dim=2)
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.log_softmax(self.fc3(x))
-        return x
+        return self.layer(x)
 
 model = Net()
 criterion = nn.MSELoss()
-
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-for epoch in tqdm(range(10000)):
+Y_history = np.zeros((num_epoch, N, 3))
+Z_history = np.zeros((num_epoch, N, 2))
+
+losses = []
+for epoch in tqdm(range(num_epoch)):
     running_loss = 0.0
     for i, data in enumerate(trainloader):
         inputs, labels = data
         inputs, labels = Variable(inputs), Variable(labels)
 
         optimizer.zero_grad()
-
         outputs = model(inputs)
-
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
 
         running_loss += loss.item()
-        if i % 2000 == 1999:
-            print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 2000))
-            running_loss = 0.0
+    print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss))
+    Y_history[epoch] = model(X).detach().numpy()
+    Z_history[epoch] = model.layer.Z.detach().numpy()
+    losses.append(running_loss)
+    running_loss = 0.0
 
-print('Finished Training')
+with open("./Y_history.pickle", 'wb') as f:
+    pickle.dump(Y_history, f)
+with open("./Z_history.pickle", 'wb') as f:
+    pickle.dump(Z_history, f)
 
-
+plt.plot(np.arange(num_epoch), np.array(losses))
+plt.show()
