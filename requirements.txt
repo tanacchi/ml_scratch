@@ -1,8 +1,10 @@
 dash
-pandas
 matplotlib
 numpy
+pandas
 plotly
 scipy
 sklearn
+torch
+torchvision
 tqdm
