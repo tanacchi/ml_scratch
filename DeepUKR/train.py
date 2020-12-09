@@ -51,15 +51,17 @@ with tqdm(range(num_epoch)) as pbar:
             inputs, labels = Variable(inputs), Variable(labels)
 
             optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            outputs1, outputs2 = model(inputs)
+            loss = criterion(outputs1, labels)
+            loss = loss + loss
             loss.backward()
             optimizer.step()
 
             running_loss += loss.item()
         pbar.set_postfix(
             OrderedDict(epoch=f"{epoch + 1}", loss=f"{running_loss:.3f}"))
-        Y_history[epoch] = model(X).detach().numpy()
+        Y, Z = model(X)
+        Y_history[epoch] = Y.detach().numpy()
         Z_history[epoch] = model.layer.Z.detach().numpy()
         losses.append(running_loss)
         running_loss = 0.0

@@ -27,7 +27,7 @@ class UKR(nn.Module):
         #  diff_right = torch.einsum("ni,id,ind,inl->nl", R.T, d_ii, d_in, δ_in)
         #  diff = 2 * (diff_left - diff_right) / X.shape[0]
         #  return self.Z - self.η * diff
-        return Y
+        return (Y, self.Z)
 
 
 def make_grid2d(resolution, bounds=(-1, +1)):
