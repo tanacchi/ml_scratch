@@ -15,7 +15,8 @@ def visualize_history(X, Y_history, Z_history, save_gif=False):
     if input_dim == 3 and latent_dim == 2:
         _, K, _ = Y_history.shape
         reso = int(np.sqrt(K))
-        Y_history = np.array(Y_history).reshape((num_epoch, reso, reso, input_dim))
+        Y_history = np.array(Y_history).reshape(
+            (num_epoch, reso, reso, input_dim))
 
     observable_drawer = [None, None, draw_observable_2D,
                          draw_observable_3D][input_dim]
@@ -26,7 +27,8 @@ def visualize_history(X, Y_history, Z_history, save_gif=False):
     ani = FuncAnimation(fig,
                         update_graph,
                         frames=num_epoch,
-                        repeat=True, interval=5,
+                        repeat=True,
+                        interval=50,
                         fargs=(observable_drawer, latent_drawer, X, Y_history,
                                Z_history, fig, input_ax, latent_ax, num_epoch))
     plt.show()
@@ -52,7 +54,11 @@ def draw_observable_3D(ax, X, Y, colormap):
     ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=colormap)
     #  ax.scatter(Y[:, 0], Y[:, 1], Y[:, 2], c='b', alpha=0.5, s=30)
     if len(Y.shape) == 3:
-        ax.plot_wireframe(Y[:, :, 0], Y[:, :, 1], Y[:, :, 2], color='black', alpha=0.5)
+        ax.plot_wireframe(Y[:, :, 0],
+                          Y[:, :, 1],
+                          Y[:, :, 2],
+                          color='black',
+                          alpha=0.5)
 
 
 #     else:
