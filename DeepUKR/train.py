@@ -5,17 +5,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-import torch.utils.data
-import torchvision
 from torch.autograd import Variable
 from torchvision import datasets, models, transforms
 from tqdm import tqdm
 
 from data import gen_saddle_shape
-from loss import mse_and_scale_loss
-from ukr_layer import UKR
+from ukr import UKRNet
 
 samples = 1000
 N = 100
@@ -28,17 +24,7 @@ X_train = X.repeat(samples, 1, 1)
 train = torch.utils.data.TensorDataset(X_train, X_train)
 trainloader = torch.utils.data.DataLoader(train, batch_size=1, shuffle=True)
 
-
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.layer = UKR(N, latent_dim=2, sigma=2)
-
-    def forward(self, x):
-        return self.layer(x)
-
-
-model = Net().to(device)
+model = UKRNet(N).to(device)
 criterion = nn.MSELoss()
 optimizer = optim.SGD(model.parameters(),
                       lr=0.01,
@@ -57,7 +43,7 @@ with tqdm(range(num_epoch)) as pbar:
             inputs, labels = Variable(inputs), Variable(labels)
 
             optimizer.zero_grad()
-            outputs, params = model(inputs)
+            outputs = model(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -65,8 +51,7 @@ with tqdm(range(num_epoch)) as pbar:
             running_loss += loss.item()
         pbar.set_postfix(
             OrderedDict(epoch=f"{epoch + 1}", loss=f"{running_loss:.3f}"))
-        Y, Z = model(X)
-        Y_history[epoch] = Y.detach().cpu().numpy()
+        Y_history[epoch] = model(X).detach().cpu().numpy()
         Z_history[epoch] = model.layer.Z.detach().cpu().numpy()
         losses.append(running_loss)
         running_loss = 0.0
