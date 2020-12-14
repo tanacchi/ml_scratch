@@ -16,7 +16,7 @@ from ukr import UKRNet
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 N = 100
-samples = 1000
+samples = 1
 X = torch.from_numpy(gen_saddle_shape(N).astype(np.float32)).to(device)
 X_train = X.repeat(samples, 1, 1)
 train = torch.utils.data.TensorDataset(X_train, X_train)
@@ -29,7 +29,7 @@ optimizer = optim.SGD(model.parameters(),
                       momentum=0.9,
                       weight_decay=1e-4)
 
-num_epoch = 500
+num_epoch = 200
 Y_history = np.zeros((num_epoch, N, 3))
 Z_history = np.zeros((num_epoch, N, 2))
 
@@ -39,7 +39,7 @@ with tqdm(range(num_epoch)) as pbar:
         running_loss = 0.0
         for i, data in enumerate(trainloader):
             inputs, targets = data
-            inputs, targets = Variable(inputs), Variable(labels)
+            inputs, targets = Variable(inputs), Variable(targets)
 
             optimizer.zero_grad()
             outputs = model(inputs)
@@ -55,9 +55,11 @@ with tqdm(range(num_epoch)) as pbar:
         losses.append(running_loss)
         running_loss = 0.0
 
+# Loss の推移の描画
 plt.plot(np.arange(num_epoch), np.array(losses))
 plt.show()
 
+# 学習結果を *.pickle で保存
 with open("./X.pickle", 'wb') as f:
     pickle.dump(X.detach().cpu().numpy(), f)
 with open("./Y_history.pickle", 'wb') as f:

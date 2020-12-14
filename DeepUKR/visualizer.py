@@ -73,8 +73,8 @@ def draw_observable_2D(ax, X, Y, colormap):
 
 
 def draw_latent_2D(ax, Z, colormap):
-    # ax.set_xlim(-5, 5)
-    # ax.set_ylim(-5, 5)
+    ax.set_xlim(-5, 5)
+    ax.set_ylim(-5, 5)
     ax.scatter(Z[:, 0], Z[:, 1], c=colormap)
 
 
