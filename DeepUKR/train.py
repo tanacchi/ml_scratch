@@ -16,7 +16,7 @@ from ukr import UKRNet
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 N = 100
-samples = 1
+samples = 1000
 X = torch.from_numpy(gen_saddle_shape(N).astype(np.float32)).to(device)
 X_train = X.repeat(samples, 1, 1)
 train = torch.utils.data.TensorDataset(X_train, X_train)
