@@ -31,13 +31,11 @@ def make_grid2d(resolution, bounds=(-1, +1)):
 
 with open("X.pickle", 'rb') as f:
     X = pickle.load(f)
-with open("Y_history.pickle", 'rb') as f:
-    Y_history = pickle.load(f)
 with open("Z_history.pickle", 'rb') as f:
     Z_history = pickle.load(f)
 
 resolution = 10
-f_history = np.zeros((Y_history.shape[0], resolution**2, 3))
+f_history = np.zeros((Z_history.shape[0], resolution**2, 3))
 for i, Z in enumerate(Z_history):
     Zeta = make_grid2d(resolution, (Z.min(), Z.max()))
     f = estimate_f(X, Zeta, Z)

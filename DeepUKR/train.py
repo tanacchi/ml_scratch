@@ -32,7 +32,6 @@ optimizer = optim.SGD(model.parameters(),
 
 # 学習結果，loss 保存用の変数
 num_epoch = 200
-Y_history = np.zeros((num_epoch, N, 3))
 Z_history = np.zeros((num_epoch, N, 2))
 losses = []
 
@@ -51,8 +50,7 @@ with tqdm(range(num_epoch)) as pbar:
             optimizer.step()
             running_loss += loss.item()
 
-        # Y, Z の保存
-        Y_history[epoch] = model(X).detach().cpu().numpy()
+        # 潜在変数の保存
         Z_history[epoch] = model.layer.Z.detach().cpu().numpy()
         # loss の値の保存
         losses.append(running_loss)
@@ -66,7 +64,5 @@ plt.show()
 # 学習結果を *.pickle で保存
 with open("./X.pickle", 'wb') as f:
     pickle.dump(X.detach().cpu().numpy(), f)
-with open("./Y_history.pickle", 'wb') as f:
-    pickle.dump(Y_history, f)
 with open("./Z_history.pickle", 'wb') as f:
     pickle.dump(Z_history, f)
